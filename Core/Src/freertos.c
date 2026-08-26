@@ -22,7 +22,7 @@
 #include "task.h"
 #include "main.h"
 #include "cmsis_os.h"
-#include "led.h"
+#include "usart.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -62,6 +62,13 @@ const osThreadAttr_t LEDTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for TelemetryTask */
+osThreadId_t TelemetryTaskHandle;
+const osThreadAttr_t TelemetryTask_attributes = {
+  .name = "TelemetryTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -70,6 +77,7 @@ const osThreadAttr_t LEDTask_attributes = {
 
 void StartDefaultTask(void *argument);
 void StartTask02(void *argument);
+void StartTask03(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -105,6 +113,9 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of LEDTask */
   LEDTaskHandle = osThreadNew(StartTask02, NULL, &LEDTask_attributes);
+
+  /* creation of TelemetryTask */
+  TelemetryTaskHandle = osThreadNew(StartTask03, NULL, &TelemetryTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -148,9 +159,29 @@ void StartTask02(void *argument)
   for(;;)
   {
     LED_Toggle();
-    osDelay(10000);
+    osDelay(500);
   }
   /* USER CODE END StartTask02 */
+}
+
+/* USER CODE BEGIN Header_StartTask03 */
+/**
+* @brief Function implementing the TelemetryTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartTask03 */
+void StartTask03(void *argument)
+{
+  /* USER CODE BEGIN StartTask03 */
+  /* Infinite loop */
+	char message[] = "TelemetryTask is running\r\n";
+	for(;;) {
+	  HAL_UART_Transmit(&huart2, (uint8_t*)message, sizeof(message) - 1, HAL_MAX_DELAY);
+	  osDelay(1000);
+
+	}
+  /* USER CODE END StartTask03 */
 }
 
 /* Private application code --------------------------------------------------*/
